@@ -26,4 +26,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: python -m pip install -r .sykit-checkout/requirements.txt
       - run: python compat.py .sykit-checkout
