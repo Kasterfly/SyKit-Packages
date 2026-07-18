@@ -1,0 +1,16 @@
+{
+    "packages": {
+        "db-base": {
+            "path": "db-base",
+            "desc": "Document database layer; sqlite by default, driver interface for other backends."
+        },
+        "resend": {
+            "path": "resend",
+            "desc": "Send email through the Resend API."
+        },
+        "textbelt": {
+            "path": "textbelt",
+            "desc": "Send SMS through the TextBelt API."
+        }
+    }
+}
