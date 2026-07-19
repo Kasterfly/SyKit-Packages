@@ -12,10 +12,12 @@ python SyKit package add db-base --yes --allow-core
 ```
 
 `--allow-core` is required because the package adds a module under
-`sykit/`; the pre-install report shows exactly one `core-edit` finding for
-`sykit/db.py` plus an `env-read` info for the optional path variable.
-Existing projects should re-run `python SyKit init` afterwards so the new
-module is copied into `src/`, then rebuild.
+`sykit/`; the pre-install report shows a `core-edit` finding for
+`sykit/db.py`, an `env-read` finding for the optional path variable, and
+an `exec-call` finding for the `importlib` call that loads provider
+modules by scheme name. Existing projects should re-run
+`python SyKit init` afterwards so the new module is copied into `src/`,
+then rebuild.
 
 ## Configuration
 
@@ -54,8 +56,12 @@ from sykit import db
 db.register_driver("myscheme", lambda target: MyDriver(target))
 ```
 
-Then `db.connect("myscheme:whatever-the-driver-needs")` uses it. Declare
-`"package-req": ["db-base"]` in the provider's `SyKitPackage.json`.
+Then `db.connect("myscheme:whatever-the-driver-needs")` uses it. Name
+the module after the scheme (`sykit/myscheme.py`): `connect()` imports
+`sykit.<scheme>` automatically when it sees an unregistered scheme, so
+apps never import the provider themselves. Declare
+`"package-req": ["db-base"]` in the provider's `SyKitPackage.json`. The
+`supabase` package in this repository is the reference implementation.
 
 ## Contents
 
