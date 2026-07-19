@@ -172,17 +172,6 @@ def check_manifest(folder: Path) -> None:
             not isinstance(value[key], str) or not clean_text(value[key])
         ):
             problem(f"{label}: {key} must be a clean string.")
-    package_req = value.get("package-req", [])
-    if not isinstance(package_req, list) or not all(
-        isinstance(entry, str)
-        and ID_PATTERN.fullmatch(entry)
-        and not entry.endswith(".")
-        and not reserved_component(entry)
-        for entry in package_req
-    ):
-        problem(f"{label}: package-req must be a list of package ids.")
-    elif len({entry.casefold() for entry in package_req}) != len(package_req):
-        problem(f"{label}: package-req may not contain duplicate ids.")
     sykit_req = value.get("sykit-req", "")
     if not isinstance(sykit_req, str) or (
         sykit_req and VERSION_PATTERN.fullmatch(sykit_req) is None

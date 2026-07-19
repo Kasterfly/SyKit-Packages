@@ -34,48 +34,12 @@ def run_command(
     return subprocess.run(arguments, cwd=cwd, capture_output=True, text=True)
 
 
-def load_manifest(folder: Path) -> dict:
-    return json.loads((folder / "SyKitPackage.json").read_text(encoding="utf-8"))
-
-
-def requirement_folders(
-    manifest: dict, packages: dict, root: Path
-) -> list[tuple[str, Path]]:
-    """Resolve package-req ids to (id, folder) pairs, dependencies first."""
-    ordered: list[tuple[str, Path]] = []
-    seen: set[str] = set()
-
-    def visit(requirements) -> None:
-        if isinstance(requirements, str):
-            requirements = [requirements]
-        for requirement in requirements:
-            folded = str(requirement).casefold()
-            if folded in seen:
-                continue
-            seen.add(folded)
-            for name in sorted(packages):
-                folder = root.joinpath(*packages[name].get("path", name).split("/"))
-                required = load_manifest(folder)
-                if str(required.get("id", "")).casefold() == folded:
-                    visit(required.get("package-req", []))
-                    ordered.append((required["id"], folder))
-                    break
-            else:
-                raise ValueError(
-                    f"required package {requirement!r} is not in index.json"
-                )
-
-    visit(manifest.get("package-req", []))
-    return ordered
-
-
 def check_package(
     name: str,
     folder: Path,
     sykit_source: Path,
     base: Path,
     install_deps: bool,
-    packages: dict,
 ) -> str | None:
     """Install, test, and remove one package. Returns an error or None."""
     manifest = load_manifest(folder)
@@ -176,8 +140,7 @@ def main() -> int:
             print(f"=== {name} ===")
             try:
                 error = check_package(
-                    name, folder, sykit_source, Path(temporary), install_deps,
-                    packages,
+                    name, folder, sykit_source, Path(temporary), install_deps
                 )
             except (OSError, ValueError, KeyError, json.JSONDecodeError) as issue:
                 error = f"{name}: {issue}"
