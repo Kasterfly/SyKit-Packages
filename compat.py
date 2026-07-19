@@ -4,8 +4,9 @@ Usage: python compat.py <path-to-sykit-checkout>
 
 For each package in index.json, this copies the SyKit tree, installs the
 package (SyKit 0.4.0+ flags first, with a fallback for older handlers),
-runs the full SyKit test suite, and removes the package again. Any install,
-test, or removal failure fails the run.
+runs the full SyKit test suite, and removes the package again. Packages
+listed in a manifest's package-req are installed first and removed last,
+in dependency order. Any install, test, or removal failure fails the run.
 
 CI runs this on every push and on a weekly schedule; run it manually
 (workflow_dispatch) after each SyKit release to confirm the library still
@@ -33,17 +34,51 @@ def run_command(
     return subprocess.run(arguments, cwd=cwd, capture_output=True, text=True)
 
 
+def load_manifest(folder: Path) -> dict:
+    return json.loads((folder / "SyKitPackage.json").read_text(encoding="utf-8"))
+
+
+def requirement_folders(
+    manifest: dict, packages: dict, root: Path
+) -> list[tuple[str, Path]]:
+    """Resolve package-req ids to (id, folder) pairs, dependencies first."""
+    ordered: list[tuple[str, Path]] = []
+    seen: set[str] = set()
+
+    def visit(requirements) -> None:
+        if isinstance(requirements, str):
+            requirements = [requirements]
+        for requirement in requirements:
+            folded = str(requirement).casefold()
+            if folded in seen:
+                continue
+            seen.add(folded)
+            for name in sorted(packages):
+                folder = root.joinpath(*packages[name].get("path", name).split("/"))
+                required = load_manifest(folder)
+                if str(required.get("id", "")).casefold() == folded:
+                    visit(required.get("package-req", []))
+                    ordered.append((required["id"], folder))
+                    break
+            else:
+                raise ValueError(
+                    f"required package {requirement!r} is not in index.json"
+                )
+
+    visit(manifest.get("package-req", []))
+    return ordered
+
+
 def check_package(
     name: str,
     folder: Path,
     sykit_source: Path,
     base: Path,
     install_deps: bool,
+    packages: dict,
 ) -> str | None:
     """Install, test, and remove one package. Returns an error or None."""
-    manifest = json.loads(
-        (folder / "SyKitPackage.json").read_text(encoding="utf-8")
-    )
+    manifest = load_manifest(folder)
     package_id = manifest["id"]
     deps = manifest.get("deps", [])
     if isinstance(deps, str):
@@ -62,6 +97,19 @@ def check_package(
         print(f"  installed declared deps: {', '.join(deps)}")
     tool = base / f"SyKit-{name}"
     shutil.copytree(sykit_source, tool, ignore=IGNORE_COPY)
+
+    requirements = requirement_folders(manifest, packages, ROOT)
+    for required_id, required_folder in requirements:
+        installed = run_command(
+            [sys.executable, str(tool), "package", "add", str(required_folder),
+             "--yes", "--allow-core"]
+        )
+        if installed.returncode != 0:
+            return (
+                f"{name}: required package {required_id} failed to install\n"
+                f"{installed.stdout}{installed.stderr}"
+            )
+        print(f"  installed requirement: {required_id}")
 
     add = run_command(
         [sys.executable, str(tool), "package", "add", str(folder), "--yes",
@@ -89,6 +137,15 @@ def check_package(
     remove = run_command([sys.executable, str(tool), "package", "remove", package_id])
     if remove.returncode != 0:
         return f"{name}: removal failed\n{remove.stdout}{remove.stderr}"
+    for required_id, _folder in reversed(requirements):
+        removed = run_command(
+            [sys.executable, str(tool), "package", "remove", required_id]
+        )
+        if removed.returncode != 0:
+            return (
+                f"{name}: removing requirement {required_id} failed\n"
+                f"{removed.stdout}{removed.stderr}"
+            )
     print("  removed cleanly")
     return None
 
@@ -119,7 +176,8 @@ def main() -> int:
             print(f"=== {name} ===")
             try:
                 error = check_package(
-                    name, folder, sykit_source, Path(temporary), install_deps
+                    name, folder, sykit_source, Path(temporary), install_deps,
+                    packages,
                 )
             except (OSError, ValueError, KeyError, json.JSONDecodeError) as issue:
                 error = f"{name}: {issue}"
