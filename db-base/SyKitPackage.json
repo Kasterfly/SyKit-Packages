@@ -1,5 +1,6 @@
 {
     "id": "db-base",
     "name": "Database Base",
-    "desc": "Small document database layer for SyKit apps. SQLite by default (stdlib), with a driver interface other database packages can register into."
+    "desc": "Small document database layer for SyKit apps. SQLite by default (stdlib), with a driver interface other database packages can register into.",
+    "sykit-req": "0.4.1"
 }

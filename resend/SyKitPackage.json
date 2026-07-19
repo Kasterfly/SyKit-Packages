@@ -1,5 +1,6 @@
 {
     "id": "resend",
     "name": "Resend Email",
-    "desc": "Send email through the Resend API from SyKit endpoints. Stdlib only; reads RESEND_API_KEY and RESEND_FROM from the environment."
+    "desc": "Send email through the Resend API from SyKit endpoints. Stdlib only; reads RESEND_API_KEY and RESEND_FROM from the environment.",
+    "sykit-req": "0.4.1"
 }
