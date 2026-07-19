@@ -8,6 +8,10 @@
             "path": "resend",
             "desc": "Send email through the Resend API."
         },
+        "supabase": {
+            "path": "supabase",
+            "desc": "Supabase backend for db-base over the project's REST API."
+        },
         "textbelt": {
             "path": "textbelt",
             "desc": "Send SMS through the TextBelt API."

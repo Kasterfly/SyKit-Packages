@@ -1,0 +1,7 @@
+{
+    "id": "supabase",
+    "name": "Supabase Database Driver",
+    "desc": "Supabase backend for the db-base document layer over the project's REST API. Registers the \"supabase\" scheme with sykit.db; standard library only.",
+    "sykit-req": "0.4.1",
+    "package-req": ["db-base"]
+}
