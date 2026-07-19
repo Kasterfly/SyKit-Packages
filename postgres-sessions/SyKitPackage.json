@@ -1,0 +1,7 @@
+{
+    "id": "postgres-sessions",
+    "name": "PostgreSQL Sessions",
+    "desc": "PostgreSQL backend for SyKit's session-store setting: shared, revocable sessions across workers and hosts via psycopg.",
+    "sykit-req": "0.5.0",
+    "deps": ["psycopg[binary]>=3.1,<4"]
+}
