@@ -13,16 +13,21 @@ repository by the SyKit package handler.
 
 | Package | Description |
 | --- | --- |
+| [auth0](auth0/) | Auth0 login flow for SyKit sessions; server-side code exchange, stdlib only |
 | [db-base](db-base/) | Document database layer; sqlite by default, driver interface for other backends |
+| [postgres-sessions](postgres-sessions/) | PostgreSQL backend for the session-store setting; shared, revocable sessions |
 | [resend](resend/) | Send email through the Resend API |
 | [supabase](supabase/) | Supabase backend for db-base over the project's REST API |
 | [textbelt](textbelt/) | Send SMS through the TextBelt API |
 
-All of them add a module under `sykit/`, so installs need
+Most of them add a module under `sykit/`, so installs need
 `--yes --allow-core` (or an interactive yes plus `--allow-core`); the
-pre-install report states exactly what each one touches. `supabase`
-builds on `db-base` and must be installed after it (`package-req`
-enforces the order).
+pre-install report states exactly what each one touches
+(`postgres-sessions` is the exception: it only adds a `files/core/`
+module and installs with `--yes` alone). `supabase` builds on `db-base`
+and must be installed after it (`package-req` enforces the order);
+`auth0` and `postgres-sessions` need SyKit 0.5.0 or newer
+(`sykit-req`).
 
 Run `python SyKit package add github:Kasterfly/SyKit-Packages` to print the
 live listing straight from `index.json`.
