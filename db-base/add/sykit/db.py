@@ -25,6 +25,10 @@ factory taking the target string:
     from sykit import db
 
     db.register_driver("myscheme", lambda target: MyDriver(target))
+
+Name the provider module after its scheme (sykit/myscheme.py):
+connect("myscheme:...") imports sykit.myscheme automatically, so apps
+never need to import the provider themselves.
 """
 
 from __future__ import annotations
@@ -34,6 +38,7 @@ import os
 import re
 import sqlite3
 import threading
+from importlib import import_module
 from typing import Any, Callable
 
 DEFAULT_PATH = "sykit.db"
@@ -191,7 +196,8 @@ def connect(target: str | None = None) -> Database:
     """Open a database.
 
     None or a plain path opens the sqlite driver. "scheme:rest" dispatches
-    to a registered driver; a single-letter scheme is treated as a Windows
+    to a registered driver, importing sykit.<scheme> first when the scheme
+    is not registered yet; a single-letter scheme is treated as a Windows
     drive letter and stays a sqlite path. Unknown schemes raise, so a
     missing provider package fails loudly instead of writing to an odd
     file.
@@ -203,6 +209,13 @@ def connect(target: str | None = None) -> Database:
     if target and ":" in target:
         prefix, _, remainder = target.partition(":")
         folded = prefix.casefold()
+        if folded not in _DRIVERS and len(prefix) != 1 and folded.isidentifier():
+            # Provider packages register their scheme when their module is
+            # imported; look for a module named after the scheme.
+            try:
+                import_module(f"sykit.{folded}")
+            except ImportError:
+                pass
         if folded in _DRIVERS:
             scheme, rest = folded, remainder
         elif len(prefix) != 1:

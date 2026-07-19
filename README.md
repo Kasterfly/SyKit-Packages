@@ -15,11 +15,14 @@ repository by the SyKit package handler.
 | --- | --- |
 | [db-base](db-base/) | Document database layer; sqlite by default, driver interface for other backends |
 | [resend](resend/) | Send email through the Resend API |
+| [supabase](supabase/) | Supabase backend for db-base over the project's REST API |
 | [textbelt](textbelt/) | Send SMS through the TextBelt API |
 
-All three add a module under `sykit/`, so installs need
+All of them add a module under `sykit/`, so installs need
 `--yes --allow-core` (or an interactive yes plus `--allow-core`); the
-pre-install report states exactly what each one touches.
+pre-install report states exactly what each one touches. `supabase`
+builds on `db-base` and must be installed after it (`package-req`
+enforces the order).
 
 Run `python SyKit package add github:Kasterfly/SyKit-Packages` to print the
 live listing straight from `index.json`.
