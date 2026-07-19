@@ -33,12 +33,33 @@ def run_command(
     return subprocess.run(arguments, cwd=cwd, capture_output=True, text=True)
 
 
-def check_package(name: str, folder: Path, sykit_source: Path, base: Path) -> str | None:
+def check_package(
+    name: str,
+    folder: Path,
+    sykit_source: Path,
+    base: Path,
+    install_deps: bool,
+) -> str | None:
     """Install, test, and remove one package. Returns an error or None."""
     manifest = json.loads(
         (folder / "SyKitPackage.json").read_text(encoding="utf-8")
     )
     package_id = manifest["id"]
+    deps = manifest.get("deps", [])
+    if isinstance(deps, str):
+        deps = [deps]
+    if deps and install_deps:
+        # CI only (--install-deps): local runs must not touch the
+        # environment, so declared dependencies stay uninstalled there.
+        installed = run_command(
+            [sys.executable, "-m", "pip", "install", *deps]
+        )
+        if installed.returncode != 0:
+            return (
+                f"{name}: declared dependencies failed to install\n"
+                f"{installed.stdout}{installed.stderr}"
+            )
+        print(f"  installed declared deps: {', '.join(deps)}")
     tool = base / f"SyKit-{name}"
     shutil.copytree(sykit_source, tool, ignore=IGNORE_COPY)
 
@@ -73,10 +94,13 @@ def check_package(name: str, folder: Path, sykit_source: Path, base: Path) -> st
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Usage: python compat.py <path-to-sykit-checkout>")
+    arguments = sys.argv[1:]
+    install_deps = "--install-deps" in arguments
+    arguments = [entry for entry in arguments if entry != "--install-deps"]
+    if len(arguments) != 1:
+        print("Usage: python compat.py <path-to-sykit-checkout> [--install-deps]")
         return 2
-    sykit_source = Path(sys.argv[1]).resolve()
+    sykit_source = Path(arguments[0]).resolve()
     if not (sykit_source / "package.py").is_file():
         print(f"{sykit_source} does not look like a SyKit checkout.")
         return 2
@@ -94,7 +118,9 @@ def main() -> int:
             folder = ROOT.joinpath(*entry.get("path", name).split("/"))
             print(f"=== {name} ===")
             try:
-                error = check_package(name, folder, sykit_source, Path(temporary))
+                error = check_package(
+                    name, folder, sykit_source, Path(temporary), install_deps
+                )
             except (OSError, ValueError, KeyError, json.JSONDecodeError) as issue:
                 error = f"{name}: {issue}"
             if error:

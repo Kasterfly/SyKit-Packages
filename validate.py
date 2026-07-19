@@ -21,7 +21,9 @@ INDEX_PATH = ROOT / "index.json"
 MANIFEST_NAME = "SyKitPackage.json"
 SECTION_DIRS = ("add", "edit", "remove")
 PACKAGE_ENTRIES = {MANIFEST_NAME, *SECTION_DIRS}
-MANIFEST_KEYS = {"id", "name", "desc", "package-req", "credit"}
+MANIFEST_KEYS = {"id", "name", "desc", "package-req", "credit", "sykit-req", "deps"}
+VERSION_PATTERN = re.compile(r"\d+\.\d+\.\d+")
+DEP_MAX_LENGTH = 200
 PROTECTED_ROOTS = {".git", ".packages", "__pycache__"}
 NON_PACKAGE_FILES = {"index.json", "validate.py"}
 ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
@@ -171,6 +173,30 @@ def check_manifest(folder: Path) -> None:
             not isinstance(value[key], str) or not clean_text(value[key])
         ):
             problem(f"{label}: {key} must be a clean string.")
+    sykit_req = value.get("sykit-req", "")
+    if not isinstance(sykit_req, str) or (
+        sykit_req and VERSION_PATTERN.fullmatch(sykit_req) is None
+    ):
+        problem(f'{label}: sykit-req must be a version like "0.4.1".')
+    deps = value.get("deps", [])
+    if isinstance(deps, str):
+        deps = [deps]
+    if not isinstance(deps, list) or not all(
+        isinstance(entry, str) and entry.strip() for entry in deps
+    ):
+        problem(f"{label}: deps must be a string or list of non-empty strings.")
+    else:
+        deps = [entry.strip() for entry in deps]
+        for entry in deps:
+            if (
+                len(entry) > DEP_MAX_LENGTH
+                or not entry[0].isalnum()
+                or not all(32 <= ord(character) <= 126 for character in entry)
+            ):
+                problem(f"{label}: deps entry {entry!r} is not a valid requirement.")
+        folded = [entry.casefold() for entry in deps]
+        if len(set(folded)) != len(folded):
+            problem(f"{label}: deps may not contain duplicates.")
 
 
 def check_package_folder(folder: Path) -> None:

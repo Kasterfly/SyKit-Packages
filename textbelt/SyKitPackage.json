@@ -1,5 +1,6 @@
 {
     "id": "textbelt",
     "name": "TextBelt SMS",
-    "desc": "Send SMS through the TextBelt API from SyKit endpoints. Stdlib only; reads TEXTBELT_API_KEY from the environment."
+    "desc": "Send SMS through the TextBelt API from SyKit endpoints. Stdlib only; reads TEXTBELT_API_KEY from the environment.",
+    "sykit-req": "0.4.1"
 }

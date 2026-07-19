@@ -91,10 +91,14 @@ works against the new version.
    keep working across SyKit updates, while edits can lose their anchors.
 3. Ship the package's tests as added files under `tests/` so the compat
    check exercises them automatically after every install.
-4. Add the package to `index.json` with a short description.
-5. Run `python validate.py` locally; pull requests must pass validate and
+4. Declare `"sykit-req"` with the minimum SyKit version the package needs
+   (SyKit 0.4.1 or newer understands the key), and list any runtime
+   dependencies under `"deps"` as pip requirement strings; SyKit shows
+   them at install time but never installs them.
+5. Add the package to `index.json` with a short description.
+6. Run `python validate.py` locally; pull requests must pass validate and
    compat.
-6. Tag a release after merging so bare-name installs pin to it.
+7. Tag a release after merging so bare-name installs pin to it.
 
 ## Hosting your own package repo
 
