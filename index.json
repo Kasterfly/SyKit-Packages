@@ -8,6 +8,10 @@
             "path": "db-base",
             "desc": "Document database layer; sqlite by default, driver interface for other backends."
         },
+        "postgres": {
+            "path": "postgres",
+            "desc": "Native PostgreSQL backend for db-base through psycopg."
+        },
         "postgres-sessions": {
             "path": "postgres-sessions",
             "desc": "PostgreSQL backend for the session-store setting; shared, revocable sessions."

@@ -15,6 +15,7 @@ repository by the SyKit package handler.
 | --- | --- |
 | [auth0](auth0/) | Auth0 login flow for SyKit sessions; server-side code exchange, stdlib only |
 | [db-base](db-base/) | Document database layer; sqlite by default, driver interface for other backends |
+| [postgres](postgres/) | Native PostgreSQL backend for db-base through psycopg |
 | [postgres-sessions](postgres-sessions/) | PostgreSQL backend for the session-store setting; shared, revocable sessions |
 | [resend](resend/) | Send email through the Resend API |
 | [supabase](supabase/) | Supabase backend for db-base over the project's REST API |
@@ -26,6 +27,7 @@ pre-install report states exactly what each one touches
 (`postgres-sessions` is the exception: it only adds a `files/core/`
 module and installs with `--yes` alone). `supabase` builds on `db-base`
 and must be installed after it (`package-req` enforces the order);
+`postgres` and `supabase` build on `db-base` and must be installed after it;
 `auth0` and `postgres-sessions` need SyKit 0.5.0 or newer
 (`sykit-req`).
 
