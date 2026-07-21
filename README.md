@@ -29,14 +29,17 @@ module and installs with `--yes` alone). `supabase` builds on `db-base`
 and must be installed after it (`package-req` enforces the order);
 `postgres` and `supabase` build on `db-base` and must be installed after it;
 `auth0` and `postgres-sessions` need SyKit 0.5.0 or newer
-(`sykit-req`).
+(`sykit-req`). All official packages support the stable SyKit 1.x line and
+declare `sykit-before: 2.0.0` so a future breaking major is refused before
+installation changes any files.
 
 Run `python SyKit package add github:Kasterfly/SyKit-Packages` to print the
 live listing straight from `index.json`.
 
 ## Installing
 
-Requires SyKit 0.4.0 or newer:
+The `1.0.0` release of this repository is the compatible package line for
+SyKit 1.0.0. Individual packages retain their earlier minimum SyKit versions.
 
 ```
 python SyKit package add <name>              # latest release of this repo
@@ -102,9 +105,9 @@ works against the new version.
 3. Ship the package's tests as added files under `tests/` so the compat
    check exercises them automatically after every install.
 4. Declare `"sykit-req"` with the minimum SyKit version the package needs
-   (SyKit 0.4.1 or newer understands the key), and list any runtime
-   dependencies under `"deps"` as pip requirement strings; SyKit shows
-   them at install time but never installs them.
+   and `"sykit-before"` with the exclusive next breaking major. List any
+   runtime dependencies under `"deps"` as pip requirement strings; SyKit
+   shows them at install time but never installs them.
 5. Add the package to `index.json` with a short description.
 6. Run `python validate.py` locally; pull requests must pass validate and
    compat.

@@ -2,5 +2,6 @@
     "id": "auth0",
     "name": "Auth0 Login",
     "desc": "Auth0 Authorization Code flow for SyKit logins: begin() builds the redirect, complete() verifies state, exchanges the code, and returns the profile for sykit.auth.login(). Standard library only.",
-    "sykit-req": "0.5.0"
+    "sykit-req": "0.5.0",
+    "sykit-before": "2.0.0"
 }
