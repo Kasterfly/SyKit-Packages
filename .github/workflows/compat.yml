@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Kasterfly/SyKit
+          ref: 1.0.0
           path: .sykit-checkout
       - uses: actions/setup-python@v5
         with:
@@ -26,5 +27,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: python -m pip install -r .sykit-checkout/requirements.txt
+      - name: Install locked SyKit development dependencies
+        run: python -m pip install --require-hashes -r .sykit-checkout/requirements-dev.lock
+      - name: Check installed dependencies
+        run: python -m pip check
       - run: python compat.py .sykit-checkout --install-deps

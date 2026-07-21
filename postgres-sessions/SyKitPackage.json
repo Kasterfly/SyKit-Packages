@@ -3,5 +3,6 @@
     "name": "PostgreSQL Sessions",
     "desc": "PostgreSQL backend for SyKit's session-store setting: shared, revocable sessions across workers and hosts via psycopg.",
     "sykit-req": "0.5.0",
+    "sykit-before": "2.0.0",
     "deps": ["psycopg[binary]>=3.1,<4"]
 }

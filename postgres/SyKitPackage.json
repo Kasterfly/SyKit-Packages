@@ -3,6 +3,7 @@
     "name": "PostgreSQL Database Driver",
     "desc": "Native PostgreSQL backend for the db-base document layer via psycopg. Registers the postgres scheme and reuses SYKIT_POSTGRES_DSN.",
     "sykit-req": "0.4.1",
+    "sykit-before": "2.0.0",
     "package-req": ["db-base"],
     "deps": ["psycopg[binary]>=3.1,<4"]
 }

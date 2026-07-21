@@ -1,6 +1,6 @@
 """Validate the SyKit-Packages repository layout and index.json.
 
-Standard library only. Mirrors the rules the SyKit 0.4.0 package handler
+Standard library only. Mirrors the rules the SyKit 1.0.0 package handler
 applies when it resolves packages from this repository, so anything that
 passes here should install cleanly (against a matching SyKit tree).
 
@@ -20,7 +20,16 @@ INDEX_PATH = ROOT / "index.json"
 MANIFEST_NAME = "SyKitPackage.json"
 SECTION_DIRS = ("add", "edit", "remove")
 PACKAGE_ENTRIES = {MANIFEST_NAME, *SECTION_DIRS}
-MANIFEST_KEYS = {"id", "name", "desc", "package-req", "credit", "sykit-req", "deps"}
+MANIFEST_KEYS = {
+    "id",
+    "name",
+    "desc",
+    "package-req",
+    "credit",
+    "sykit-req",
+    "sykit-before",
+    "deps",
+}
 VERSION_PATTERN = re.compile(r"\d+\.\d+\.\d+")
 DEP_MAX_LENGTH = 200
 PROTECTED_ROOTS = {".git", ".packages", "__pycache__"}
@@ -188,6 +197,19 @@ def check_manifest(folder: Path) -> None:
         sykit_req and VERSION_PATTERN.fullmatch(sykit_req) is None
     ):
         problem(f'{label}: sykit-req must be a version like "0.4.1".')
+    sykit_before = value.get("sykit-before", "")
+    if not isinstance(sykit_before, str) or (
+        sykit_before and VERSION_PATTERN.fullmatch(sykit_before) is None
+    ):
+        problem(f'{label}: sykit-before must be a version like "2.0.0".')
+    elif (
+        isinstance(sykit_req, str)
+        and VERSION_PATTERN.fullmatch(sykit_req)
+        and sykit_before
+        and tuple(map(int, sykit_req.split(".")))
+        >= tuple(map(int, sykit_before.split(".")))
+    ):
+        problem(f"{label}: sykit-req must be earlier than sykit-before.")
     deps = value.get("deps", [])
     if isinstance(deps, str):
         deps = [deps]
